@@ -1,13 +1,13 @@
 
  RUN  v2.1.3 /Users/dean/src/personal/neverthrow-typesugar
 
- ✓ tests/safe-try.test.ts  (19 tests) 5ms
- ✓ tests/index.test.ts  (98 tests) 18ms
+ ✓ tests/safe-try.test.ts  (19 tests) 3ms
+ ✓ tests/index.test.ts  (98 tests) 10ms
 
  Test Files  2 passed (2)
       Tests  117 passed (117)
-   Start at  19:05:40
-   Duration  2.42s (transform 2.78s, setup 0ms, collect 4.46s, tests 23ms, environment 0ms, prepare 76ms)
+   Start at  19:16:33
+   Duration  1.34s (transform 1.50s, setup 0ms, collect 2.31s, tests 13ms, environment 0ms, prepare 87ms)
 
 
 typesugar transform calls (vitest):
@@ -19,4 +19,4 @@ typesugar transform calls (vitest):
   src/_internals/error.ts: passed through
   src/_internals/utils.ts: passed through
   src/result-async.ts: passed through
-7 modules expanded by typesugar, 0 changed
+7 modules seen by typesugar, 0 changed

@@ -1,0 +1,106 @@
+{
+  "date": "2026-11-13T09:11:20.803Z",
+  "node": "v22.23.2",
+  "load": [
+    12.958984375,
+    13.1982421875,
+    9.0361328125
+  ],
+  "trees": {
+    "A": "/var/folders/nq/gph1rvfj7gl64rpgv0v0s5lw0000gn/T//neverthrow-case-study-bench/A-1d4cc19ed2e6",
+    "B": "/var/folders/nq/gph1rvfj7gl64rpgv0v0s5lw0000gn/T//neverthrow-case-study-bench/B-81e22c0edb57"
+  },
+  "runs": 3,
+  "out": {
+    "build": {
+      "A": [
+        {
+          "seconds": 1.328048125,
+          "maxRssMB": 328
+        },
+        {
+          "seconds": 1.516202208,
+          "maxRssMB": 329
+        },
+        {
+          "seconds": 1.469646041,
+          "maxRssMB": 328
+        }
+      ],
+      "B": [
+        {
+          "seconds": 2.804224083,
+          "maxRssMB": 608
+        },
+        {
+          "seconds": 2.693034709,
+          "maxRssMB": 607
+        },
+        {
+          "seconds": 3.451869416,
+          "maxRssMB": 602
+        }
+      ]
+    },
+    "vitest": {
+      "A": [
+        {
+          "seconds": 1.637643208,
+          "maxRssMB": 120
+        },
+        {
+          "seconds": 0.652614125,
+          "maxRssMB": 116
+        },
+        {
+          "seconds": 0.726363459,
+          "maxRssMB": 115
+        }
+      ],
+      "B": [
+        {
+          "seconds": 3.658432625,
+          "maxRssMB": 496
+        },
+        {
+          "seconds": 2.901203458,
+          "maxRssMB": 493
+        },
+        {
+          "seconds": 2.722417125,
+          "maxRssMB": 499
+        }
+      ]
+    },
+    "test-types": {
+      "A": [
+        {
+          "seconds": 1.376196083,
+          "maxRssMB": 300
+        },
+        {
+          "seconds": 1.061566209,
+          "maxRssMB": 298
+        },
+        {
+          "seconds": 1.081735916,
+          "maxRssMB": 296
+        }
+      ],
+      "B": [
+        {
+          "seconds": 1.294015291,
+          "maxRssMB": 299
+        },
+        {
+          "seconds": 1.098676125,
+          "maxRssMB": 296
+        },
+        {
+          "seconds": 1.13415825,
+          "maxRssMB": 300
+        }
+      ]
+    }
+  }
+}
