@@ -1,0 +1,21 @@
+commit: 932d6e55a9e5525d3ac6b9663b6362c41ac84669
+branch: neverthrow-case-study-fixes
+remote: https://github.com/typesugar/typesugar
+packed: 2026-11-13T09:16:27Z
+node:   v22.23.2
+files:
+  e243335405eddb9563ad4462b68cb29cc1e17a7bae2ca98bb17a14672b82cbbc  typesugar-0.1.1-932d6e55.tgz
+  647921c7325961e38bb2646c5d926d5cb431914ddc4c4dbfb76a0d70a6e89e4d  typesugar-contracts-0.1.1-932d6e55.tgz
+  4713d1289103aaee4b014666b627eb90bb439a423d69875f2979dafa121a1e1a  typesugar-core-0.1.1-932d6e55.tgz
+  8bcdc2dd62b40294df1522bc036e17dc859e8de61371eecbfc09c7c31108f527  typesugar-derive-0.1.1-932d6e55.tgz
+  7db6660eff7b12614924652618ef5adf944d43edbe9a5eb4184fca8012768304  typesugar-fp-0.1.1-932d6e55.tgz
+  cf1282b41355ad4907018d16d089551be875ba5f0b09887e1d1b661d870c008d  typesugar-lsp-common-0.1.1-932d6e55.tgz
+  d7a1add8467ff99a7cab155595d2db25631f1be961ebe61f349667e47d6e5c10  typesugar-macros-0.1.1-932d6e55.tgz
+  129be6d069c061aaea47cf6d39380335911c393261b67339a76527b96f9e9abe  typesugar-reflect-0.1.1-932d6e55.tgz
+  28a660ab60ca49318346be6df5d140bd76140b3af19cf25752b3a7eaef619354  typesugar-std-0.1.1-932d6e55.tgz
+  1ad9a4cde23a6772d2ff32db1e477278706d2c63cfc7e0d2a188d030d2e4e55e  typesugar-transformer-0.1.1-932d6e55.tgz
+  c908b0ace7f63cd30fcbc261c25c4f8d7a5f27411fbb31a7f3c54514e3bc34b1  typesugar-transformer-core-0.1.1-932d6e55.tgz
+  8f1329ea57516ff1b14be41ac0dd8d3949eaf49b65a408dbb3d279c21f3c0ca2  typesugar-type-system-0.1.1-932d6e55.tgz
+  c78767bcd203e5c56b7487e24f46b5fa0ce335a2b306cf70dcc5c4f79d21ca99  typesugar-typeclass-0.1.1-932d6e55.tgz
+  db37260bf5496f1b1613cc35eb72ca1ca7c5f628da9305b4798349eaa599925f  typesugar-validate-0.1.1-932d6e55.tgz
+  2adb8eefcc276ce4a2689e35ae98c7d71d268a43e4b1918c0dc4ed278507cedf  unplugin-typesugar-0.1.1-932d6e55.tgz

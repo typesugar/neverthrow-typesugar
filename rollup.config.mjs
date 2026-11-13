@@ -1,5 +1,15 @@
 import typescript from "rollup-plugin-typescript2";
 import dts from "rollup-plugin-dts";
+import { createRequire } from "node:module";
+
+// typesugar (case study). unplugin-typesugar is a dependency of the
+// case-study package, not of the root, so resolve it from there. It runs
+// before rollup-plugin-typescript2 (`enforce: "pre"`) and hands on a module
+// only when expansion changed it; otherwise rpt2 compiles the file from disk
+// exactly as before.
+const caseStudyRequire = createRequire(new URL("./case-study/package.json", import.meta.url));
+const typesugarRollup = caseStudyRequire("unplugin-typesugar/rollup");
+const typesugar = typesugarRollup.default ?? typesugarRollup;
 
 /**
  * Just a few details about this build implementation:
@@ -29,7 +39,7 @@ export default [
       file: "tmp/index.es.js",
       format: "es",
     },
-    plugins: [typescript()],
+    plugins: [typesugar({ tsconfig: "./tsconfig.json" }), typescript()],
   },
   {
     input: "src/index.ts",
@@ -37,7 +47,7 @@ export default [
       file: "tmp/index.cjs.js",
       format: "cjs",
     },
-    plugins: [typescript()],
+    plugins: [typesugar({ tsconfig: "./tsconfig.json" }), typescript()],
   },
   {
     input: "tmp/index.d.ts",
