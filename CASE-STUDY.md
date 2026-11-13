@@ -7,8 +7,9 @@ refactor a real, widely used TypeScript library in stages using typesugar's
 macros, and measure whether "zero cost" holds. It is a one-off study, not a
 maintained fork; all credit for neverthrow itself goes to its authors.
 
-Branch: `typesugar-case-study`, from tag `v8.2.0` (1d4cc19). Local only so
-far: no public fork yet.
+Branch: `typesugar-case-study`, from tag `v8.2.0` (1d4cc19). Each stage is a
+branch (`stage-0`, ...) with a PR on this fork; nothing is sent to
+neverthrow upstream.
 
 ## Why neverthrow
 
@@ -61,7 +62,9 @@ with the same names but a different representation (class instances with
   passes.
 - **Every stage is measured against the stage before it and against v8.2.0.**
 - **typesugar bugs found here are fixed in typesugar** (failing test first) on
-  typesugar branch `neverthrow-case-study-fixes`, and logged below. The fork
+  typesugar branch `neverthrow-case-study-fixes`
+  ([typesugar#87](https://github.com/typesugar/typesugar/pull/87)), and
+  logged below. The fork
   never patches around a typesugar bug silently.
 - **typesugar is consumed as packed tarballs** (`vendor/typesugar/*.tgz`)
   built from a recorded typesugar commit, so anyone can reproduce a stage
@@ -281,8 +284,10 @@ superseded, not deleted._
   neverthrow's 5 modules (`verbose: true` prints one "Creating TypeScript
   program" line per module). Every unplugin build has this, including the
   esbuild plugin Turf used. Fix: on first sight, invalidate only when the
-  code differs from disk (another plugin rewrote it). Commit `932d6e55` on
-  typesugar branch `neverthrow-case-study-fixes`, failing test first
+  code differs from disk (another plugin rewrote it). Commit
+  [`932d6e55`](https://github.com/typesugar/typesugar/commit/932d6e55) on
+  typesugar branch `neverthrow-case-study-fixes`
+  ([typesugar#87](https://github.com/typesugar/typesugar/pull/87)), failing test first
   (`packages/unplugin-typesugar/src/__tests__/neverthrow-case-study.test.ts`),
   with a changeset. Interleaved, 5 runs each: `npm run build` 2.11 s →
   1.78 s, `vitest run` 2.05 s → 1.63 s. Evidence:
@@ -316,5 +321,6 @@ superseded, not deleted._
 
 - Turf fork: apply F2's one-line `pack.sh` fix (strip credentials from the
   remote URL) to `vendor/typesugar/pack.sh`.
-- typesugar: F3's fix is on branch `neverthrow-case-study-fixes`, not yet
-  pushed or in a PR. F1 and F4 are not filed.
+- typesugar: F3's fix is
+  [typesugar#87](https://github.com/typesugar/typesugar/pull/87). F1 and F4
+  are not filed.
