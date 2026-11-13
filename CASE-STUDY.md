@@ -129,10 +129,18 @@ comparing against ours.
    zero-cost bar is the `reference:` bench tasks, with the classes as the
    representation.
 3. **`match()` over `Result`** in consumer code:
-   `match(r).case(Ok(v))....case(Err(e))...`. Expect bugs here: `match()`'s
-   extractor tables know `Ok`/`Err` by name and probe for `ok`/`_tag` fields
-   (PEP-062 row 1), and neverthrow's `Ok` has neither, only `.value` and an
-   `isOk()` method.
+   `match(r).case(Ok(v))....case(Err(e))...`. Extractors are `Destructure`
+   instances resolved from scope and keyed by the constructor's symbol, not
+   its name (PEP-008 Wave 11, on typesugar main; the name-based `Ok`/`Err`
+   were removed). So neverthrow's `./macros` entry ships one instance per
+   class, with a `@destructure` descriptor so the pattern compiles to the
+   test and field read inline (`v instanceof Ok`, `v.value`). The descriptor
+   grammar has no `instanceof` test today (`not-null`, `null`, `always`,
+   `has <key>`, `<field> = <literal>`); `has value`/`has error` would work
+   for neverthrow's classes, but an `instanceof` test is the one a person
+   would write, so expect a typesugar change here. Check also that a file
+   importing fp's `Result` alongside neverthrow's resolves each to its own
+   instance.
 4. **Do-notation in place of `safeTry`.** typesugar's do-notation over
    neverthrow's `Result` (through Stage 1's `Monad`), compiled to plain
    branches, against `safeTry` generators. Stage 0's benchmark puts a
