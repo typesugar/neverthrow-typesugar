@@ -1,6 +1,6 @@
-e6ff8f15d29e7e5e3e9c6eda661d2c34dd6d03a4e14c7987215f7e02ca63bd3d  dist/index.cjs.js
-578f25fcaeefc5b5fb071db12ccda89d4d3ef193f0c46a783e2bb42ef160a318  dist/index.d.ts
-dbde51471ea0249b07ae8cd00e31773db2132890ea4234f63e01e05ca483f72f  dist/index.es.js
+e6ff8f15d29e7e5e3e9c6eda661d2c34dd6d03a4e14c7987215f7e02ca63bd3d  stage-0: dist/index.cjs.js
+578f25fcaeefc5b5fb071db12ccda89d4d3ef193f0c46a783e2bb42ef160a318  stage-0: dist/index.d.ts
+dbde51471ea0249b07ae8cd00e31773db2132890ea4234f63e01e05ca483f72f  stage-0: dist/index.es.js
 e6ff8f15d29e7e5e3e9c6eda661d2c34dd6d03a4e14c7987215f7e02ca63bd3d  v8.2.0: dist/index.cjs.js
 578f25fcaeefc5b5fb071db12ccda89d4d3ef193f0c46a783e2bb42ef160a318  v8.2.0: dist/index.d.ts
 dbde51471ea0249b07ae8cd00e31773db2132890ea4234f63e01e05ca483f72f  v8.2.0: dist/index.es.js

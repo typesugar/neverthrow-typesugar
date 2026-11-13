@@ -1,0 +1,154 @@
+{
+  "date": "2026-11-13T09:18:28.537Z",
+  "node": "v22.23.2",
+  "load": [
+    11.76806640625,
+    11.650390625,
+    9.751953125
+  ],
+  "trees": {
+    "A": "/var/folders/nq/gph1rvfj7gl64rpgv0v0s5lw0000gn/T//neverthrow-case-study-bench/B-81e22c0edb57",
+    "B": "/var/folders/nq/gph1rvfj7gl64rpgv0v0s5lw0000gn/T//neverthrow-case-study-bench/B-d03d70baa4c3"
+  },
+  "runs": 5,
+  "out": {
+    "build": {
+      "A": [
+        {
+          "seconds": 2.23302375,
+          "maxRssMB": 610
+        },
+        {
+          "seconds": 2.02463725,
+          "maxRssMB": 599
+        },
+        {
+          "seconds": 2.111701125,
+          "maxRssMB": 600
+        },
+        {
+          "seconds": 1.961647,
+          "maxRssMB": 600
+        },
+        {
+          "seconds": 2.1101455,
+          "maxRssMB": 603
+        }
+      ],
+      "B": [
+        {
+          "seconds": 1.797470708,
+          "maxRssMB": 589
+        },
+        {
+          "seconds": 1.928426875,
+          "maxRssMB": 589
+        },
+        {
+          "seconds": 1.75720375,
+          "maxRssMB": 581
+        },
+        {
+          "seconds": 1.747293417,
+          "maxRssMB": 583
+        },
+        {
+          "seconds": 1.779506166,
+          "maxRssMB": 582
+        }
+      ]
+    },
+    "vitest": {
+      "A": [
+        {
+          "seconds": 2.130086042,
+          "maxRssMB": 502
+        },
+        {
+          "seconds": 2.05147725,
+          "maxRssMB": 500
+        },
+        {
+          "seconds": 2.257775125,
+          "maxRssMB": 497
+        },
+        {
+          "seconds": 1.898379791,
+          "maxRssMB": 495
+        },
+        {
+          "seconds": 1.865550833,
+          "maxRssMB": 496
+        }
+      ],
+      "B": [
+        {
+          "seconds": 1.840291125,
+          "maxRssMB": 471
+        },
+        {
+          "seconds": 1.749489416,
+          "maxRssMB": 469
+        },
+        {
+          "seconds": 1.62969075,
+          "maxRssMB": 468
+        },
+        {
+          "seconds": 1.591227708,
+          "maxRssMB": 469
+        },
+        {
+          "seconds": 1.570474,
+          "maxRssMB": 468
+        }
+      ]
+    },
+    "test-types": {
+      "A": [
+        {
+          "seconds": 0.884370625,
+          "maxRssMB": 297
+        },
+        {
+          "seconds": 0.983289667,
+          "maxRssMB": 300
+        },
+        {
+          "seconds": 0.981482791,
+          "maxRssMB": 300
+        },
+        {
+          "seconds": 0.899415584,
+          "maxRssMB": 299
+        },
+        {
+          "seconds": 0.89246675,
+          "maxRssMB": 295
+        }
+      ],
+      "B": [
+        {
+          "seconds": 0.892339209,
+          "maxRssMB": 298
+        },
+        {
+          "seconds": 0.967900125,
+          "maxRssMB": 297
+        },
+        {
+          "seconds": 0.952530541,
+          "maxRssMB": 299
+        },
+        {
+          "seconds": 0.890567667,
+          "maxRssMB": 299
+        },
+        {
+          "seconds": 0.895619209,
+          "maxRssMB": 298
+        }
+      ]
+    }
+  }
+}

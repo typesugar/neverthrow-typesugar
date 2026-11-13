@@ -1,0 +1,154 @@
+{
+  "date": "2026-11-13T09:17:33.359Z",
+  "node": "v22.23.2",
+  "load": [
+    11.3876953125,
+    11.5205078125,
+    9.5810546875
+  ],
+  "trees": {
+    "A": "/var/folders/nq/gph1rvfj7gl64rpgv0v0s5lw0000gn/T//neverthrow-case-study-bench/A-1d4cc19ed2e6",
+    "B": "/var/folders/nq/gph1rvfj7gl64rpgv0v0s5lw0000gn/T//neverthrow-case-study-bench/B-d03d70baa4c3"
+  },
+  "runs": 5,
+  "out": {
+    "build": {
+      "A": [
+        {
+          "seconds": 0.839760833,
+          "maxRssMB": 328
+        },
+        {
+          "seconds": 0.792036792,
+          "maxRssMB": 327
+        },
+        {
+          "seconds": 0.784399875,
+          "maxRssMB": 325
+        },
+        {
+          "seconds": 0.909607,
+          "maxRssMB": 328
+        },
+        {
+          "seconds": 0.898529916,
+          "maxRssMB": 327
+        }
+      ],
+      "B": [
+        {
+          "seconds": 1.507575542,
+          "maxRssMB": 584
+        },
+        {
+          "seconds": 1.524025542,
+          "maxRssMB": 584
+        },
+        {
+          "seconds": 1.530813375,
+          "maxRssMB": 580
+        },
+        {
+          "seconds": 1.674455041,
+          "maxRssMB": 587
+        },
+        {
+          "seconds": 1.619393917,
+          "maxRssMB": 587
+        }
+      ]
+    },
+    "vitest": {
+      "A": [
+        {
+          "seconds": 0.542927459,
+          "maxRssMB": 115
+        },
+        {
+          "seconds": 0.501645375,
+          "maxRssMB": 116
+        },
+        {
+          "seconds": 0.501340791,
+          "maxRssMB": 115
+        },
+        {
+          "seconds": 0.549632792,
+          "maxRssMB": 116
+        },
+        {
+          "seconds": 0.545535459,
+          "maxRssMB": 116
+        }
+      ],
+      "B": [
+        {
+          "seconds": 1.99760925,
+          "maxRssMB": 473
+        },
+        {
+          "seconds": 1.598049084,
+          "maxRssMB": 468
+        },
+        {
+          "seconds": 1.583824166,
+          "maxRssMB": 468
+        },
+        {
+          "seconds": 1.633641667,
+          "maxRssMB": 470
+        },
+        {
+          "seconds": 1.568195666,
+          "maxRssMB": 468
+        }
+      ]
+    },
+    "test-types": {
+      "A": [
+        {
+          "seconds": 0.973224709,
+          "maxRssMB": 299
+        },
+        {
+          "seconds": 0.892943375,
+          "maxRssMB": 299
+        },
+        {
+          "seconds": 0.901989,
+          "maxRssMB": 297
+        },
+        {
+          "seconds": 0.881137375,
+          "maxRssMB": 296
+        },
+        {
+          "seconds": 0.876796333,
+          "maxRssMB": 298
+        }
+      ],
+      "B": [
+        {
+          "seconds": 1.094901042,
+          "maxRssMB": 298
+        },
+        {
+          "seconds": 0.897828334,
+          "maxRssMB": 298
+        },
+        {
+          "seconds": 0.909188625,
+          "maxRssMB": 300
+        },
+        {
+          "seconds": 0.883176417,
+          "maxRssMB": 298
+        },
+        {
+          "seconds": 0.883705541,
+          "maxRssMB": 297
+        }
+      ]
+    }
+  }
+}

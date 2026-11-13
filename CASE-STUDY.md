@@ -116,7 +116,7 @@ comparing against ours.
    neverthrow's `Result` (through Stage 1's `Monad`), compiled to the plain
    `andThen` chain, compared with `safeTry` generators. Stage 0's benchmark
    puts a two-step `safeTry` at about 26 times the cost of the same chain
-   written with `andThen` (F5), so this is the stage with a measurable
+   written with `andThen` (F6), so this is the stage with a measurable
    runtime claim. Users write `safeTry`, not neverthrow's internals, so this
    lands as new tests and bench cases, and in the library only where it uses
    `safeTry` itself.
@@ -151,10 +151,12 @@ records why.
 checkout and in clean worktree builds of each side. All 117 vitest tests pass
 through typesugar, and the type tests, `typecheck` and `lint` pass as before.
 
-typesugar: `origin/main` at
+typesugar: branch `neverthrow-case-study-fixes` at `932d6e55`, which is
+`origin/main` at
 [`86bcf8c7`](https://github.com/typesugar/typesugar/commit/86bcf8c7) (PR #86
-merged), vendored as tarballs in `vendor/typesugar/`. No typesugar change was
-needed.
+merged) plus the fix for F3. It is vendored as tarballs in
+`vendor/typesugar/`. Output was byte-identical before the fix too; the fix
+only makes the build faster.
 
 What changed in the fork (no file under `src/` or `tests/` changed):
 
@@ -178,9 +180,9 @@ What changed in the fork (no file under `src/` or `tests/` changed):
   `case-study/experiments/`.
 
 How we know typesugar ran: a byte-identical `dist/` would also come from a
-plugin that never ran. The plugin's `verbose` option only logs modules it
-changes (F6), so two experiments wrap the plugin's `transform` and record
-each call:
+plugin that never ran. Two experiments wrap the plugin's `transform` and
+record each call (the plugin's `verbose: true` option shows the same, one
+"Transformed ... (changed: false)" line per module):
 
 - `stage-0-plugin-trace.mjs` builds `src/index.ts` with the Rollup config's
   plugins: typesugar saw all 5 neverthrow modules and passed each through
@@ -197,23 +199,30 @@ busy machine, load average 13–18):
 
 | | v8.2.0 | Stage 0 |
 | --- | --- | --- |
-| `npm run build` (median of 3) | 1.47 s, 328 MB max RSS | 2.80 s, 607 MB |
-| `npx vitest run` (median of 3) | 0.73 s, 116 MB | 2.90 s, 496 MB |
-| `npm run test-types` (median of 3) | 1.08 s | 1.13 s (not touched by typesugar) |
+| `npm run build` (median of 5) | 0.84 s, 327 MB max RSS | 1.53 s, 584 MB |
+| `npx vitest run` (median of 5) | 0.54 s, 116 MB | 1.60 s, 468 MB |
+| `npm run test-types` (median of 5) | 0.89 s | 0.90 s (not touched by typesugar) |
 | Tests | 117/117 vitest, type tests pass | identical |
 | `index.es.js` raw / gzip / brotli | 18,302 / 4,118 / 3,564 | identical |
 | `index.cjs.js` raw / gzip / brotli | 18,567 / 4,172 / 3,611 | identical |
 | `index.d.ts` raw / gzip / brotli | 21,764 / 4,345 / 3,732 | identical |
 
-- The build and test overhead is fixed cost with nothing to expand: each
-  plugin instance builds a TypeScript 5.9 Program at start (F3).
-- Bench, v8.2.0 against Stage 0, 5 rounds (`bench-v8.2.0-vs-stage-0/`):
-  14 of 14 deltas are smaller than their spread, as they must be for
-  identical bytes. The median delta was +5.2% (range −5.1% to +8.1%), and the
-  two reference tasks, which never touch neverthrow, moved +1.1% and +4.4%.
-  So on this machine at this load a run can't resolve differences under
-  about 10% (F4). The write-up benches need a quiet machine and an A/A
-  calibration run first.
+- The build and test overhead is a fixed cost with nothing to expand: about
+  0.7–1.1 s and 260–350 MB, which goes on loading TypeScript 5.9 and
+  typesugar and building one Program per plugin instance (F4; not profiled
+  further). Before the F3 fix every
+  module rebuilt the Program; the fix took 0.3–0.4 s off each build and
+  test run (`timings-86bcf8c7-vs-932d6e55.json`).
+- Single runs and medians move with the machine's load: the same v8.2.0
+  build took a median 1.47 s in an earlier set of 3 runs. Only the
+  interleaved A/B pairs in one file are comparable.
+- Bench, v8.2.0 against Stage 0, 5 rounds (`bench-v8.2.0-vs-stage-0/`, run
+  with typesugar `86bcf8c7`; `dist/` is the same bytes either way): 14 of 14
+  deltas are smaller than their spread, as they must be for identical bytes.
+  The median delta was +5.2% (range −5.1% to +8.1%), and the two reference
+  tasks, which never touch neverthrow, moved +1.1% and +4.4%. So on this
+  machine at this load a run can't resolve differences under about 10% (F5).
+  The write-up benches need a quiet machine and an A/A calibration run first.
 
 ## Findings
 
@@ -241,33 +250,48 @@ superseded, not deleted._
   same latent bug (its committed `COMMIT` files are clean, because that
   checkout's remote had no credentials) and should get the same one-line
   fix.
-- **F3 (cost, open): the build plugins cost ~1.3–2.2 s and ~280–380 MB even
-  when nothing imports typesugar.** Median of 3 on a busy machine: `npm run
-  build` 1.47 s → 2.80 s (328 → 607 MB max RSS), `vitest run` 0.73 s →
-  2.90 s (116 → 496 MB). Every plugin instance creates a full TypeScript
-  Program in `buildStart`, before it knows whether any module uses a macro;
-  neverthrow's Rollup config has two JS builds, so two Programs. For a
-  1.2k-line library this fixed cost is most of the build. A cheap pre-scan
-  (does any module import a typesugar package or carry a typesugar JSDoc
-  tag?) could skip the Program when the answer is no. Not filed yet.
-  Evidence: `case-study/results/stage-0/timings.json`.
-- **F4 (method): at load 13–18 this machine can't resolve runtime deltas
+- **F3 (bug, fixed): the bundler plugins rebuilt the TypeScript Program once
+  per module.** unplugin-typesugar's `transform` invalidated every module the
+  first time it saw it, even when the bundler handed it the code on disk,
+  which is what the Program was built from. Each invalidation drops the
+  Program, so the next module rebuilt it: 5 Programs per Rollup build for
+  neverthrow's 5 modules (`verbose: true` prints one "Creating TypeScript
+  program" line per module). Every unplugin build has this, including the
+  esbuild plugin Turf used. Fix: on first sight, invalidate only when the
+  code differs from disk (another plugin rewrote it). Commit `932d6e55` on
+  typesugar branch `neverthrow-case-study-fixes`, failing test first
+  (`packages/unplugin-typesugar/src/__tests__/neverthrow-case-study.test.ts`),
+  with a changeset. Interleaved, 5 runs each: `npm run build` 2.11 s →
+  1.78 s, `vitest run` 2.05 s → 1.63 s. Evidence:
+  `case-study/results/stage-0/timings-86bcf8c7-vs-932d6e55.json`.
+- **F4 (cost, open): even with F3 fixed, the plugins add ~0.7–1.1 s and
+  ~260–350 MB when nothing imports typesugar.** Median of 5, interleaved, busy
+  machine: `npm run build` 0.84 s → 1.53 s (327 → 584 MB max RSS), `vitest
+  run` 0.54 s → 1.60 s (116 → 468 MB). The pipeline builds its Program on the
+  first module it transforms, before it knows whether any module uses a
+  macro, and neverthrow's Rollup config has two JS builds, so two Programs.
+  For a 1.2k-line library this fixed cost is most of the build. A cheap
+  pre-scan (does this module import a typesugar package or carry a typesugar
+  JSDoc tag?) could skip the Program for modules that can't expand. Not
+  filed yet. Evidence: `case-study/results/stage-0/timings.json`.
+- **F5 (method): at load 12–18 this machine can't resolve runtime deltas
   under about 10%.** With byte-identical code on both sides, 5 interleaved
   rounds gave a median delta of +5.2% (range −5.1% to +8.1%) and spreads up
   to 20%. Final numbers need a quiet machine, and an A/A run (the same tree
   as both sides) to calibrate the noise floor before any A/B is read.
   Evidence: `case-study/results/stage-0/bench-v8.2.0-vs-stage-0/`.
-- **F5 (baseline for Stage 3): a `safeTry` block costs about 26 times the
+- **F6 (baseline for Stage 3): a `safeTry` block costs about 26 times the
   equivalent `andThen` chain.** Same inputs, two fallible steps and a map:
   `safeTry` with two `yield*`s ran 2,268 batches of 1,000 per second (about
   440 ns per chain), the `andThen` / `map` / `mapErr` chain 59,569 (about
-  17 ns). The generator object and its iterator protocol are the cost; V8
-  removes most of the class allocations in the `andThen` chain. One machine,
-  busy (F4), but a 26× gap is far outside the noise. Evidence: v8.2.0 column
-  of `bench-v8.2.0-vs-stage-0/summary.md`.
-- **F6 (gap, minor): the plugin's `verbose` mode doesn't show modules it
-  passed through.** It logs the config, the Program size and each module it
-  changed, so with nothing to expand it prints the same as a plugin that
-  never ran. Proving Stage 0 needed the wrapper experiments above (Turf could
-  use the loader's `TYPESUGAR_VERBOSE` pass-through lines). A "passed through"
-  line per module in verbose mode would do. Not filed yet.
+  17 ns). Presumably the generator object and the iterator protocol are the
+  cost; not profiled. One busy machine (F5), but a 26× gap is far outside
+  the noise. Evidence: v8.2.0 column of
+  `case-study/results/stage-0/bench-v8.2.0-vs-stage-0/summary.md`.
+
+## Follow-ups outside this fork
+
+- Turf fork: apply F2's one-line `pack.sh` fix (strip credentials from the
+  remote URL) to `vendor/typesugar/pack.sh`.
+- typesugar: F3's fix is on branch `neverthrow-case-study-fixes`, not yet
+  pushed or in a PR. F1 and F4 are not filed.
