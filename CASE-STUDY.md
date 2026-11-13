@@ -36,7 +36,10 @@ with the same names but a different representation (class instances with
    write by hand, and why?
 4. Does typesugar resolve neverthrow's `Result`/`Ok`/`Err` by type, or does it
    confuse them with its own by name?
-5. What did adopting it cost: lines changed, friction, bugs found in
+5. Can one package serve both kinds of consumer: unchanged for plain
+   TypeScript, and compiled to hand-written code for consumers who opt in to
+   typesugar, with `Result` values passing freely between the two?
+6. What did adopting it cost: lines changed, friction, bugs found in
    typesugar, features that didn't fit?
 
 ## Ground rules
@@ -45,10 +48,14 @@ with the same names but a different representation (class instances with
   and the type tests (`tests/typecheck-tests.ts`, run by `npm run
   test-types`) are not changed to make a stage pass. New tests may be added.
   A stage that needs a test change says why, in the stage log.
-- **The class API stays.** Users rely on `instanceof Ok` / `instanceof Err`
-  and on the methods being on the instances, so `Ok` and `Err` stay classes.
-  typesugar can change how neverthrow is implemented and how code that uses
-  it is compiled, not what a `Result` is at runtime.
+- **One package, two ways to consume it, one runtime representation.**
+  Consumers who don't use typesugar get neverthrow exactly as today: `Ok` and
+  `Err` stay classes, the methods stay on the instances, `instanceof` works.
+  Consumers who opt in to typesugar get the same package plus a `./macros`
+  entry that compiles their calls on `Result` to the code they'd write by hand.
+  Both kinds of code see the same class instances, so a `Result` can cross
+  between them (a library built with plain `tsc` hands one to an app built
+  with typesugar, and back) without conversion.
 - **The published types stay.** `dist/index.d.ts` changes only by additions
   the stage log names, and `attw --pack` (part of `npm run build`) still
   passes.
@@ -97,48 +104,64 @@ comparing against ours.
    (before `rollup-plugin-typescript2`) and in vitest (neverthrow has no
    vitest config, so one is added), plus the benchmark. Expected: `dist/`
    byte-identical to v8.2.0, tests identical. **Done**, see the log.
-1. **Typeclass instances for neverthrow's `Result`.** Give `Result<T, E>`
-   `@impl` instances of typesugar's `Functor`/`Monad`/`MonadError` (and
-   `Destructure` once PEP-008 Wave 11 lands), in neverthrow's own source,
-   so typesugar's generic features can treat it as a first-class type.
-   This is the first PEP-062 test: does resolution pick neverthrow's instance
-   for neverthrow's `Result` while fp's `Result`/`Either` exist under the same
-   names? Instances are runtime objects, so either they ship in `dist/` (a
-   size cost we measure) or they live in a separate entry point; the stage
-   decides which.
-2. **`match()` over `Result`**, in neverthrow's internals (`combineResultList`
-   and friends branch on `isOk()`) and in new tests written as user code:
+1. **The opt-in entry and a consumer.** neverthrow gains a `./macros` entry
+   and `"typesugar": { "macros": "./macros" }` in `package.json` (the PEP-050
+   split; PEP-055 discovery). Plain consumers never load it; the `.` entry's
+   JavaScript stays byte-identical. The entry starts with typeclass instances
+   for `Result<T, E>` (`Functor`/`Monad`/`MonadError`, and `Destructure` once
+   PEP-008 Wave 11 lands), so typesugar's generic features treat neverthrow's
+   `Result` as a first-class type. A consumer project
+   (`case-study/consumer/`) runs the same source and the same tests twice:
+   compiled plainly, and compiled with typesugar. This is the first real
+   third-party macro package through PEP-055's `approve-macros` path, and
+   the first PEP-062 test: does resolution pick neverthrow's instances for
+   neverthrow's `Result` while fp's `Result`/`Either` exist under the same
+   names?
+2. **Method chains compiled to hand-written code.** In typesugar-compiled
+   code, `parse(s).andThen(validate).map(toUser).mapErr(toHttp)` becomes the
+   branches a person would write: no method dispatch, no closures, one
+   `Result` allocated at the end instead of one per step. The `instanceof`
+   check doesn't go away: a sum type needs one branch, and hand-written code
+   has it too; it moves from inside each method to one test per chain. The
+   zero-cost bar is the `reference:` bench tasks, with the classes as the
+   representation.
+3. **`match()` over `Result`** in consumer code:
    `match(r).case(Ok(v))....case(Err(e))...`. Expect bugs here: `match()`'s
    extractor tables know `Ok`/`Err` by name and probe for `ok`/`_tag` fields
    (PEP-062 row 1), and neverthrow's `Ok` has neither, only `.value` and an
    `isOk()` method.
-3. **Do-notation in place of `safeTry`.** typesugar's do-notation over
-   neverthrow's `Result` (through Stage 1's `Monad`), compiled to the plain
-   `andThen` chain, compared with `safeTry` generators. Stage 0's benchmark
-   puts a two-step `safeTry` at about 26 times the cost of the same chain
-   written with `andThen` (F6), so this is the stage with a measurable
-   runtime claim. Users write `safeTry`, not neverthrow's internals, so this
-   lands as new tests and bench cases, and in the library only where it uses
-   `safeTry` itself.
-4. **`ok`/`err` and return-type specialisation.** typesugar's return-type
-   specialisation and fp's `ok`/`err` macros pick the result algebra by type
-   name today (PEP-062 row 10; `fp/src/zero-cost/macros.ts` matches any
-   `Result.<method>(...)` call by the identifier's text, and neverthrow has
-   `Result.combine` and `Result.fromThrowable`). Test that a file using both
-   neverthrow and typesugar keeps neverthrow's semantics, then see whether
-   `fromThrowable`-style wrappers can compile to inline `try`/`catch`.
-5. **`ResultAsync` and extension methods.** Extension methods on `Result` and
-   `ResultAsync` (Turf's unexercised Stage 5), and whether typesugar's
+4. **Do-notation in place of `safeTry`.** typesugar's do-notation over
+   neverthrow's `Result` (through Stage 1's `Monad`), compiled to plain
+   branches, against `safeTry` generators. Stage 0's benchmark puts a
+   two-step `safeTry` at about 26 times the cost of the same chain written
+   with `andThen` (F6), so this is the stage with the largest expected win.
+5. **`ok`/`err`, `fromThrowable` and return-type specialisation.**
+   typesugar's return-type specialisation and fp's `ok`/`err` macros pick the
+   result algebra by type name today (PEP-062 row 10;
+   `fp/src/zero-cost/macros.ts` matches any `Result.<method>(...)` call by the
+   identifier's text, and neverthrow has `Result.combine` and
+   `Result.fromThrowable`). Test that a consumer using both keeps neverthrow's
+   semantics, then compile `fromThrowable` wrappers to inline `try`/`catch`.
+6. **`ResultAsync`.** The same for async chains, and whether typesugar's
    generic extension receivers (PR #86's open decision) mistake neverthrow's
    `Result` for fp's.
 
-Not planned: replacing the classes with an `@adt` tagged union or an
-`@opaque` representation. That is what typesugar would do for a new library,
-but it breaks `instanceof` (ground rules). If Stages 1–3 show the class cost is
-material, a side experiment can measure an `@adt` version against the
-`reference:` bench tasks without shipping it.
+Considered and rejected: a different runtime representation for
+typesugar consumers (an `@opaque` or `@adt` tagged object, with `instanceof
+Ok` rewritten to a tag test). It removes nothing the class version can't (the
+branch remains, and Stage 0's bench shows V8 already makes the class chain as
+fast as the hand-written tagged union in a microbenchmark), and it breaks
+interop: a `Result` built by plain code is a class instance, and one built by
+typesugar code would be a plain object without the methods. If Stage 2 shows
+the classes cost more than the reference at call sites that see many types,
+a side experiment can measure that representation without shipping it.
 
-Stages 1–5 may be reordered or cut based on what each one teaches; the log
+Measuring the opt-in: the bench gains consumer-side cases written in
+TypeScript and compiled ahead of time two ways (plain, and with typesugar),
+both run against the same `dist/`. Compiling ahead of time keeps the Node
+loader out of the bench process (Turf F7).
+
+Stages 1–6 may be reordered or cut based on what each one teaches; the log
 records why.
 
 ## Stage log
