@@ -632,7 +632,7 @@ superseded, not deleted._
   contrast, is removed. Nothing documents which is intended. Removing the
   import after expansion would make do-notation free at runtime. Evidence:
   line 3 of `case-study/results/stage-1/consumer-sugar.expanded.ts`.
-- **F10 (design lesson): a library that only ships instances needs no
+- **F10 (design lesson; decided after Stage 6: real objects): a library that only ships instances needs no
   `./macros` entry and no approval, and its instances can be declarations
   with no JavaScript.** Instances are found through the consumer's imports
   and through the file that declares the pattern's constructor, so instances
@@ -645,6 +645,17 @@ superseded, not deleted._
   `flatMapResult` gets `undefined` from CJS and a link error from ESM. Real
   objects would cost a few bytes each and make the types honest; that is a
   call for neverthrow's maintainers.
+  - **Decision (Dean, 2026-11-14): real objects.** `src/typesugar.ts` now
+    exports four small objects:
+    - `extract` agrees with each `@destructure` descriptor;
+    - `map`/`flatMap` delegate to `map`/`andThen`.
+
+    typesugar's output still never calls them (the expanded consumer names
+    none), and a Rollup bundle that imports only `ok` contains none of them.
+  - **Cost:** neverthrow's JavaScript is no longer byte-identical to v8.2.0.
+    `index.es.js` 18,302 → 20,058 bytes raw (4,118 → 4,695 gzip), and
+    `index.cjs.js` 18,567 → 20,425. About half of that is the JSDoc comments,
+    which rpt2 keeps in the JavaScript (`case-study/results/stage-3/size-f10.json`).
 - **F11 (gap, fixed in Stage 3 by typesugar `2f7a375a`): exhaustiveness
   doesn't see through nested extractor patterns over a union of classes.** `Ok(Ok(v))`, `Ok(Err(e))` and `Err(e)`
   cover `Result<Result<T, E>, E>`, but the check reports TS9226 "the

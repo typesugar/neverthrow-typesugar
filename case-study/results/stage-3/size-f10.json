@@ -1,0 +1,17 @@
+{
+  "index.es.js": {
+    "raw": 20058,
+    "gzip": 4695,
+    "brotli": 4078
+  },
+  "index.cjs.js": {
+    "raw": 20425,
+    "gzip": 4760,
+    "brotli": 4142
+  },
+  "index.d.ts": {
+    "raw": 23372,
+    "gzip": 4758,
+    "brotli": 4099
+  }
+}
