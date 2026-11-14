@@ -1,0 +1,3 @@
+e6ff8f15d29e7e5e3e9c6eda661d2c34dd6d03a4e14c7987215f7e02ca63bd3d  stage-1: dist/index.cjs.js
+c7b90a61543d46d0e21ac2b83699b038318311f1cbb742a7d98615786d8b29a8  stage-1: dist/index.d.ts
+dbde51471ea0249b07ae8cd00e31773db2132890ea4234f63e01e05ca483f72f  stage-1: dist/index.es.js

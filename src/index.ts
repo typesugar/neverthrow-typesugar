@@ -7,3 +7,4 @@ export {
   fromPromise,
   fromSafePromise,
 } from './result-async'
+export * from './typesugar'

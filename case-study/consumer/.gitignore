@@ -1,0 +1,4 @@
+.pack/
+node_modules/
+# Rewritten by every pack (the tarball hash changes with dist/).
+package-lock.json

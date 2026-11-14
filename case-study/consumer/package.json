@@ -1,0 +1,15 @@
+{
+  "name": "neverthrow-typesugar-consumer",
+  "private": true,
+  "type": "module",
+  "description": "A project that uses neverthrow, built two ways: plain TypeScript, and with typesugar (CASE-STUDY.md, Stage 1). neverthrow comes from a packed tarball of this repo, as a real install would; typesugar, vitest and TypeScript resolve from ../node_modules and ../../node_modules.",
+  "scripts": {
+    "pack-neverthrow": "node pack-neverthrow.mjs",
+    "test:plain": "../../node_modules/.bin/vitest run --config vitest.plain.config.mjs",
+    "test:typesugar": "../../node_modules/.bin/vitest run --config vitest.typesugar.config.mjs",
+    "check:typesugar": "../node_modules/.bin/typesugar check -p tsconfig.json"
+  },
+  "dependencies": {
+    "neverthrow": "file:.pack/neverthrow.tgz"
+  }
+}

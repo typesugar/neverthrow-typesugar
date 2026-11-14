@@ -1,0 +1,98 @@
+{
+  "date": "2026-11-14T01:46:32.876Z",
+  "node": "v22.23.2",
+  "cpu": "Apple M5 Pro",
+  "loadAverage": {
+    "start": [
+      7.5810546875,
+      10.60888671875,
+      16.88330078125
+    ],
+    "end": [
+      8.9453125,
+      10.8154296875,
+      16.8837890625
+    ]
+  },
+  "runs": 5,
+  "tasks": {
+    "vitest plain tests, plain config": {
+      "medianSeconds": 0.28,
+      "medianRssMB": 100,
+      "samples": [
+        {
+          "seconds": 0.28,
+          "rssMB": 100
+        },
+        {
+          "seconds": 0.28,
+          "rssMB": 100
+        },
+        {
+          "seconds": 0.27,
+          "rssMB": 100
+        },
+        {
+          "seconds": 0.28,
+          "rssMB": 100
+        },
+        {
+          "seconds": 0.27,
+          "rssMB": 100
+        }
+      ]
+    },
+    "vitest plain tests, typesugar config": {
+      "medianSeconds": 0.81,
+      "medianRssMB": 328,
+      "samples": [
+        {
+          "seconds": 0.81,
+          "rssMB": 328
+        },
+        {
+          "seconds": 0.78,
+          "rssMB": 329
+        },
+        {
+          "seconds": 0.81,
+          "rssMB": 328
+        },
+        {
+          "seconds": 0.78,
+          "rssMB": 329
+        },
+        {
+          "seconds": 0.82,
+          "rssMB": 328
+        }
+      ]
+    },
+    "typesugar check (whole project)": {
+      "medianSeconds": 0.8,
+      "medianRssMB": 403,
+      "samples": [
+        {
+          "seconds": 0.8,
+          "rssMB": 403
+        },
+        {
+          "seconds": 0.82,
+          "rssMB": 405
+        },
+        {
+          "seconds": 0.82,
+          "rssMB": 402
+        },
+        {
+          "seconds": 0.79,
+          "rssMB": 401
+        },
+        {
+          "seconds": 0.8,
+          "rssMB": 403
+        }
+      ]
+    }
+  }
+}
