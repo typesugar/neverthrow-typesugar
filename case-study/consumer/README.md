@@ -23,3 +23,12 @@ npm run check:typesugar                # typesugar check on the whole project
 node timings.mjs --runs 5              # plain vs typesugar cost, interleaved
 ../node_modules/.bin/typesugar expand src/sugar.ts -p tsconfig.json
 ```
+
+The benchmark (`bench/`, CASE-STUDY.md Stage 2) compiles `bench/cases.ts`
+ahead of time with typesugar, then times it in fresh processes:
+
+```sh
+../node_modules/.bin/typesugar build -p bench/tsconfig.json   # → bench/out/cases.js
+node bench/run.mjs [--pollute]                                # one process
+node bench/rounds.mjs --rounds 5 --out ../results/stage-2/consumer-bench.json
+```
