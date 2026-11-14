@@ -1,4 +1,4 @@
-import { defineConfig } from 'vitest/config'
+import { configDefaults, defineConfig } from 'vitest/config'
 import { createRequire } from 'node:module'
 
 // typesugar (case study). neverthrow ships no vitest config; this one only
@@ -12,4 +12,7 @@ const typesugar = typesugarVite.default ?? typesugarVite
 
 export default defineConfig({
   plugins: [typesugar({ tsconfig: './tests/tsconfig.tests.json' })],
+  // The consumer project (case-study/consumer/) runs its own tests with its
+  // own configs; keep it out of neverthrow's suite.
+  test: { exclude: [...configDefaults.exclude, 'case-study/**'] },
 })
