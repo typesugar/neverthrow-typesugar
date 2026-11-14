@@ -419,8 +419,10 @@ ok(lengthOf(s)) } catch (e) { return err(onError(e)) }` a macro would emit
 | 10% of calls throw | 5,310–5,579 | 6,192–6,261 |
 | no call throws | 357,895–359,165 | 382,548–385,893 |
 
-Throwing an `Error` costs about 60 times a call that returns, so the wrapper
-is a small part of the cost when anything throws. When nothing throws, the
+A throw costs several hundred times a call that returns: about 1.8 µs per
+throw (a batch with 100 throws takes about 183 µs) against about 2.8 ns per
+call without throws. So the wrapper is a small part of the cost when anything
+throws. When nothing throws, the
 wrapper costs about 7%.
 
 **`ok`/`err` and return-type specialisation: deferred.** The by-name checks
