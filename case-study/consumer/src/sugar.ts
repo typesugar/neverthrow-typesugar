@@ -2,8 +2,8 @@
 // neverthrow's Result. Only compiles with typesugar.
 import "@typesugar/std/syntax/do";
 import { match } from "@typesugar/std";
-import { Err, Ok, Result, ok } from "neverthrow";
-import { parse, validate, toUser, type ParseError, type User } from "./pipeline";
+import { Err, Ok, Result, ResultAsync, ok } from "neverthrow";
+import { lookup, parse, validate, toUser, type ParseError, type User } from "./pipeline";
 
 export function parseUserDo(s: string): Result<User, ParseError> {
   const r = let: {
@@ -55,3 +55,13 @@ export const nested = (r: Result<Result<number, string>, string>): string =>
     .case(Err(e))
     .then(`outer ${e}`)
     .else("unreachable");
+
+// Do-notation over ResultAsync (Stage 6), mixing a sync Result step.
+export function userAsyncDo(s: string): ResultAsync<User, ParseError> {
+  const r = let: {
+    n << lookup(s);
+    v << validate(n);
+  }
+  yield: toUser(v);
+  return r;
+}
