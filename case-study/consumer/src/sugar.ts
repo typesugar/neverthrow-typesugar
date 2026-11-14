@@ -43,9 +43,7 @@ export function viaAlias(p: Parsed<number>): Parsed<string> {
 }
 
 // A class as a nested pattern (F8: `typesugar check` must not report it).
-// The three arms cover every value, but the exhaustiveness check doesn't
-// see through nested extractors over a union of classes, so it asks for a
-// fallback (TS9226, F11).
+// The three arms cover every value, with no `.else()` (F11).
 export const nested = (r: Result<Result<number, string>, string>): string =>
   match(r)
     .case(Ok(Ok(v)))
@@ -53,8 +51,7 @@ export const nested = (r: Result<Result<number, string>, string>): string =>
     .case(Ok(Err(e)))
     .then(`inner ${e}`)
     .case(Err(e))
-    .then(`outer ${e}`)
-    .else("unreachable");
+    .then(`outer ${e}`);
 
 // Do-notation over ResultAsync (Stage 6), mixing a sync Result step.
 export function userAsyncDo(s: string): ResultAsync<User, ParseError> {

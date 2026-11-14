@@ -126,7 +126,9 @@ comparing against ours.
    closures, one `Result` allocated at the end instead of one per step.
    **Measured, not built** (F13): the hand-written ceiling is at most about
    20% faster, so the feature isn't worth its cost.
-3. **`match()` over `Result`** in consumer code:
+3. **`match()` over `Result`** in consumer code. **Done**: one level works
+   since Stage 1; nested patterns since typesugar `2f7a375a` (F11); output
+   shape open (F16). Originally planned:
    `match(r).case(Ok(v))....case(Err(e))...`. Extractors are `Destructure`
    instances resolved from scope and keyed by the constructor's symbol, not
    its name (PEP-008 Wave 11, on typesugar main; the name-based `Ok`/`Err`
@@ -406,6 +408,43 @@ Medians of 5 rounds, batches of 1,000 per second (load 4.5–4.9 on 18 cores;
   the size of its spread. Each match is still wrapped in a function that is
   called at once (Stage 1 log); V8 appears to inline it.
 
+### Stage 3: `match()` over `Result`
+
+**Result: `match()` with neverthrow's `Ok`/`Err` works, nested patterns
+included.** The single-level form worked from Stage 1. The open gap was F11:
+`Ok(Ok(v))`, `Ok(Err(e))` and `Err(e)` cover `Result<Result<T, E>, E>`, but
+the check demanded `.else()`. typesugar `2f7a375a` (on
+`neverthrow-case-study-fixes-2`,
+[typesugar#102](https://github.com/typesugar/typesugar/pull/102)) fixes it:
+
+- **The check:** coverage is decided one union member at a time, recursing
+  into each extractor's payload type.
+- **Tests:** six new tests, failing first. Missing arms are still reported.
+- **Where it came from:** written by a subagent and reviewed here.
+
+The consumer's `nested` match drops its `.else()`, and `typesugar check` is
+clean. neverthrow is unchanged: `dist/*.js` is byte-identical to v8.2.0, and
+its 117 tests pass.
+
+What the nested match compiles to
+(`case-study/results/stage-3/consumer-sugar.expanded.ts`), with the
+generated variable shortened to `_r`:
+
+```ts
+if ("value" in _r && (_r.value != null && typeof _r.value === "object" && "value" in _r.value)) { … }
+if ("value" in _r && (_r.value != null && typeof _r.value === "object" && "error" in _r.value)) { … }
+if ("error" in _r) { … }
+throw new MatchError(_r);   // with `import { MatchError } from "@typesugar/std"` added
+```
+
+A person would test `"value" in _r` once and branch inside it. The
+`!= null && typeof` guard repeats what the types already say, and the last arm
+keeps its test and a throw. The subagent kept every test on purpose: after a
+compound test TypeScript doesn't narrow `_r`, so an untested last arm's
+`_r.error` wouldn't type-check in the output. Speed is not the issue (Stage 2:
+single-level `match()` is as fast as the `.match()` method); the output's
+shape and its new runtime import are (F16).
+
 ### Stage 5 (partial): `fromThrowable` measured; `ok`/`err` waits on typesugar#101
 
 **`fromThrowable`: compiling a wrapper to an inline `try`/`catch` would gain
@@ -606,8 +645,8 @@ superseded, not deleted._
   `flatMapResult` gets `undefined` from CJS and a link error from ESM. Real
   objects would cost a few bytes each and make the types honest; that is a
   call for neverthrow's maintainers.
-- **F11 (gap, open): exhaustiveness doesn't see through nested extractor
-  patterns over a union of classes.** `Ok(Ok(v))`, `Ok(Err(e))` and `Err(e)`
+- **F11 (gap, fixed in Stage 3 by typesugar `2f7a375a`): exhaustiveness
+  doesn't see through nested extractor patterns over a union of classes.** `Ok(Ok(v))`, `Ok(Err(e))` and `Err(e)`
   cover `Result<Result<T, E>, E>`, but the check reports TS9226 "the
   scrutinee type is not enumerable" and asks for `.else()`. One level of
   `Ok`/`Err` is fine. Stage 3. Evidence: `nested` in
@@ -676,11 +715,28 @@ superseded, not deleted._
   - **Decision:** a macro to compile `fromThrowable` isn't worth building.
   - **Evidence:** `case-study/results/stage-5/fromthrowable.md`.
 
+- **F16 (generated code, open): a nested `match()` keeps a test on every
+  arm and adds a runtime import.**
+  - **Shape:** `Ok(Ok(v))` / `Ok(Err(e))` / `Err(e)` compiles to three
+    independent tests:
+    - the outer `"value" in _r` is repeated;
+    - each inner test is guarded by `!= null && typeof … === "object"`;
+    - a final `throw new MatchError(_r)`.
+  - **Runtime import:** the throw imports `MatchError` from `@typesugar/std`.
+    So, like F9's `syntax/do` import, a nested match makes `@typesugar/std`
+    a runtime dependency. Single-level matches have no throw and no import.
+  - **Why it keeps the tests:** after a compound test TypeScript doesn't
+    narrow `_r`, so an untested last arm wouldn't type-check in the output.
+  - **Better output:** a decision tree (test the outer extractor once, then
+    branch on the payload) would type-check and need neither the repeated
+    test, the guard nor the throw.
+  - **Evidence:** `case-study/results/stage-3/consumer-sugar.expanded.ts`.
+
 ## Follow-ups outside this fork
 
 - Turf fork: F2's `pack.sh` fix is applied (Turf `stage-3`, `147fdfd6e`).
 - typesugar: F3's fix is merged
-  ([typesugar#87](https://github.com/typesugar/typesugar/pull/87)). F7, F8
-  and F12 are on branch `neverthrow-case-study-fixes-2`
+  ([typesugar#87](https://github.com/typesugar/typesugar/pull/87)). F7, F8,
+  F11 and F12 are on branch `neverthrow-case-study-fixes-2`
   ([typesugar#102](https://github.com/typesugar/typesugar/pull/102)). F1, F4, F9 and F11 are
   not filed.
