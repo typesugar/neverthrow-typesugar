@@ -1,4 +1,5 @@
 import type { Result } from './result'
+import type { ResultAsync } from './result-async'
 
 // typesugar instances for Result (typesugar case study, Stage 1).
 //
@@ -6,7 +7,7 @@ import type { Result } from './result'
 // JavaScript. typesugar reads the JSDoc tags from the declarations and
 // compiles each use to plain code (a field test, a method call), so it never
 // references the instance values at runtime. Plain TypeScript consumers see
-// three extra exported declarations and nothing else.
+// four extra exported declarations and nothing else.
 
 /**
  * `match(r).case(Ok(v))`: compiles to `"value" in r` and `r.value`.
@@ -38,4 +39,20 @@ export declare const destructureErr: {
 export declare const flatMapResult: {
   map<T, U, E>(r: Result<T, E>, f: (t: T) => U): Result<U, E>
   flatMap<T, U, E, F>(r: Result<T, E>, f: (t: T) => Result<U, F>): Result<U, E | F>
+}
+
+/**
+ * Do-notation over ResultAsync: compiles to `andThen` and `map` calls on the
+ * values, in place of `safeTry(async function* () { ... })`. A step may be a
+ * Result or a ResultAsync, as `ResultAsync#andThen` accepts both.
+ *
+ * @impl FlatMap<ResultAsync>
+ * @do-methods bind=andThen map=map
+ */
+export declare const flatMapResultAsync: {
+  map<T, U, E>(r: ResultAsync<T, E>, f: (t: T) => U): ResultAsync<U, E>
+  flatMap<T, U, E, F>(
+    r: ResultAsync<T, E>,
+    f: (t: T) => Result<U, F> | ResultAsync<U, F>,
+  ): ResultAsync<U, E | F>
 }

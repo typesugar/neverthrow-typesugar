@@ -154,7 +154,8 @@ comparing against ours.
    identifier's text, and neverthrow has `Result.combine` and
    `Result.fromThrowable`). Test that a consumer using both keeps neverthrow's
    semantics, then compile `fromThrowable` wrappers to inline `try`/`catch`.
-6. **`ResultAsync`.** The same for async chains, and whether typesugar's
+6. **`ResultAsync`.** **Done**: a `FlatMap` instance; `let:` is 10 times
+   faster than async `safeTry` (F14). The same for async chains, and whether typesugar's
    generic extension receivers (PR #86's open decision) mistake neverthrow's
    `Result` for fp's.
 
@@ -403,6 +404,56 @@ Medians of 5 rounds, batches of 1,000 per second (load 4.5–4.9 on 18 cores;
   the size of its spread. Each match is still wrapped in a function that is
   called at once (Stage 1 log); V8 appears to inline it.
 
+### Stage 6: `ResultAsync`
+
+**Result: do-notation over `ResultAsync` runs 10 times faster than async
+`safeTry`, and 4.6 times faster than the same steps written as a flat
+method chain.** neverthrow gains one more declaration, `flatMapResultAsync`
+(`@impl FlatMap<ResultAsync>`, `@do-methods bind=andThen map=map`; the
+`.d.ts` grows to 23,310 bytes), and its JavaScript stays byte-identical to
+v8.2.0.
+
+`let:` over `ResultAsync` compiles to calls on the values, and a step can be
+a plain `Result`, as `ResultAsync#andThen` accepts both:
+
+```ts
+// let: { u << fetchUser(id); t << fetchTeam(u.teamId); c << check(u.id); } yield: …
+fetchUser(id).andThen(u => fetchTeam(u.teamId).andThen(t => check(u.id).map(c => …)))
+```
+
+The consumer adds an async pipeline written three ways:
+
+- `andThen`/`map` methods (`userAsync`);
+- async `safeTry` (`userAsyncSafeTry`);
+- `let:` (`userAsyncDo`).
+
+The tests check that all three give equal Results for every input and that
+`let:` returns a `ResultAsync`. Plain: 4 tests; typesugar: 13; `typesugar
+check` clean.
+
+Benchmark, awaited one after another, batches of 1,000 per second, median of 5
+(`case-study/results/stage-6/consumer-bench.md`, load 3–4; this run repeats
+the Stage 2 cases with the same conclusions):
+
+| Case | Clean | Spread | Polluted | Spread |
+| --- | ---: | ---: | ---: | ---: |
+| async `safeTry`, two `yield*`s | 693 | 17% | 695 | 22% |
+| `andThen(validate).map(toUser)` on `ResultAsync` | 1,559 | 14% | 1,374 | 38% |
+| `let:` (typesugar) | 7,101 | 9% | 7,043 | 29% |
+
+Why `let:` beats the method chain it is written in terms of (F14):
+
+- **Its shape.** The comprehension nests: `lookup(s).andThen(n =>
+  validate(n).map(v => toUser(v)))`, so the synchronous steps run on a plain
+  `Result` inside the one async step.
+- **The flat chain.** `lookup(s).andThen(validate).map(toUser)` makes every
+  step a `ResultAsync` method, and each adds a promise.
+
+Not covered here: Stage 6 also asked whether typesugar's generic extension
+receivers (typesugar PR #86's open decision) mistake neverthrow's `Result`
+for fp's. F12 fixed the collision that showed up (an import named like a
+method); generic extension receivers weren't exercised.
+
 ## Findings
 
 _typesugar bugs, gaps and design lessons, and method notes, each with its
@@ -564,6 +615,20 @@ superseded, not deleted._
   - **Better targets:** do-notation instead of `safeTry` gains 22× with
     what Stage 1 already ships.
   - **Evidence:** `case-study/results/stage-2/consumer-bench.md`.
+
+- **F14 (result): with `ResultAsync`, do-notation is 10 times faster than
+  async `safeTry` and 4.6 times faster than the flat method chain.**
+  - **Numbers:** awaited, batches of 1,000: async `safeTry` 693/s,
+    `andThen(validate).map(toUser)` 1,559/s, `let:` 7,101/s.
+  - **The win over `safeTry`:** generators and the iterator protocol over
+    promises (as F6, now async).
+  - **The win over the flat chain:** comes from the shape do-notation
+    produces. It nests the remaining steps inside each `andThen`, so the
+    synchronous steps run on a plain `Result` and only the first step is
+    asynchronous.
+  - **A tip for neverthrow users, typesugar or not:** nest synchronous
+    steps inside `andThen` rather than chaining them on the `ResultAsync`.
+  - **Evidence:** `case-study/results/stage-6/consumer-bench.md`.
 
 ## Follow-ups outside this fork
 

@@ -9,7 +9,7 @@
 // anyone builds it.
 import "@typesugar/std/syntax/do";
 import { match } from "@typesugar/std";
-import { Err, Ok, Result, err, ok, safeTry } from "neverthrow";
+import { Err, Ok, Result, ResultAsync, err, errAsync, ok, okAsync, safeTry } from "neverthrow";
 
 type E = { kind: "parse"; input: string } | { kind: "range"; value: number };
 type User = { id: number; name: string };
@@ -94,3 +94,26 @@ export function pollute(): number {
   }
   return x;
 }
+
+// --- Stage 6: async safeTry against do-notation over ResultAsync.
+const lookup = (s: string): ResultAsync<number, E> =>
+  parse(s).asyncAndThen((n) => (n % 2 === 0 ? okAsync(n) : errAsync({ kind: "range", value: n })));
+
+export const viaSafeTryAsync = (s: string): ResultAsync<User, E> =>
+  safeTry(async function* () {
+    const n = yield* lookup(s);
+    const v = yield* validate(n);
+    return ok(toUser(v));
+  });
+
+export const viaDoAsync = (s: string): ResultAsync<User, E> => {
+  const r = let: {
+    n << lookup(s);
+    v << validate(n);
+  }
+  yield: toUser(v);
+  return r;
+};
+
+export const viaMethodsAsync = (s: string): ResultAsync<User, E> =>
+  lookup(s).andThen(validate).map(toUser);

@@ -19,5 +19,9 @@ const name = execFileSync("npm", ["pack", "--ignore-scripts", "--pack-destinatio
   .split("\n")
   .pop();
 fs.renameSync(path.join(out, name), path.join(out, "neverthrow.tgz"));
+// The tarball's name never changes, and the lockfile pins its hash: without
+// these, npm keeps installing the previous pack.
+fs.rmSync(path.join(here, "node_modules", "neverthrow"), { recursive: true, force: true });
+fs.rmSync(path.join(here, "package-lock.json"), { force: true });
 execFileSync("npm", ["install", "--no-audit", "--no-fund", "--install-links"], { cwd: here, stdio: "inherit" });
 console.log(`packed ${name} -> .pack/neverthrow.tgz and installed it`);

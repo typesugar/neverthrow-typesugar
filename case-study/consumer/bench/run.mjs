@@ -59,6 +59,9 @@ add("S2 map x3: methods", () => { for (let i = 0; i < N; i++) use(c.map3Methods(
 add("S2 map x3: hand-compiled", () => { for (let i = 0; i < N; i++) use(c.map3Hand(i)); });
 add("S4 safeTry", () => { for (let i = 0; i < N; i++) use(isOk(c.viaSafeTry(inputs[i]))); });
 add("S4 let: (typesugar)", () => { for (let i = 0; i < N; i++) use(isOk(c.viaDo(inputs[i]))); });
+add("S6 async safeTry (awaited)", async () => { for (let i = 0; i < N; i++) use(isOk(await c.viaSafeTryAsync(inputs[i]))); });
+add("S6 async let: (typesugar, awaited)", async () => { for (let i = 0; i < N; i++) use(isOk(await c.viaDoAsync(inputs[i]))); });
+add("S6 async andThen/map (awaited)", async () => { for (let i = 0; i < N; i++) use(isOk(await c.viaMethodsAsync(inputs[i]))); });
 add("S3 .match() method", () => { for (let i = 0; i < N; i++) use(c.viaMatchMethod(results[i])); });
 add("S3 match() (typesugar)", () => { for (let i = 0; i < N; i++) use(c.viaMatchMacro(results[i])); });
 
