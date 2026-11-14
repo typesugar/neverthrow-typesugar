@@ -9,7 +9,7 @@
 // anyone builds it.
 import "@typesugar/std/syntax/do";
 import { match } from "@typesugar/std";
-import { Err, Ok, Result, ResultAsync, err, errAsync, ok, okAsync, safeTry } from "neverthrow";
+import { Err, Ok, Result, ResultAsync, err, errAsync, fromThrowable, ok, okAsync, safeTry } from "neverthrow";
 
 type E = { kind: "parse"; input: string } | { kind: "range"; value: number };
 type User = { id: number; name: string };
@@ -117,3 +117,21 @@ export const viaDoAsync = (s: string): ResultAsync<User, E> => {
 
 export const viaMethodsAsync = (s: string): ResultAsync<User, E> =>
   lookup(s).andThen(validate).map(toUser);
+
+// --- Stage 5 ceiling: a fromThrowable wrapper against the inline try/catch a
+// macro would emit. `lengthOf` throws for inputs starting with "x".
+const lengthOf = (s: string): number => {
+  if (s.charCodeAt(0) === 120) throw new Error("not a number: " + s);
+  return s.length;
+};
+const safeLength = fromThrowable(lengthOf, (e) => (e as Error).message);
+
+export const viaFromThrowable = (s: string): Result<number, string> => safeLength(s);
+
+export const viaTryHand = (s: string): Result<number, string> => {
+  try {
+    return ok(lengthOf(s));
+  } catch (e) {
+    return err((e as Error).message);
+  }
+};

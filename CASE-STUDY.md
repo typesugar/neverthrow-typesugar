@@ -148,6 +148,8 @@ comparing against ours.
    `andThen`/`map` chain) and measured in Stage 2: 22 times faster than
    `safeTry`.
 5. **`ok`/`err`, `fromThrowable` and return-type specialisation.**
+   **Partly done:** `fromThrowable` measured, not built (F15); `ok`/`err`
+   waits on typesugar#101.
    typesugar's return-type specialisation and fp's `ok`/`err` macros pick the
    result algebra by type name today (PEP-062 row 10;
    `fp/src/zero-cost/macros.ts` matches any `Result.<method>(...)` call by the
@@ -404,6 +406,39 @@ Medians of 5 rounds, batches of 1,000 per second (load 4.5–4.9 on 18 cores;
   the size of its spread. Each match is still wrapped in a function that is
   called at once (Stage 1 log); V8 appears to inline it.
 
+### Stage 5 (partial): `fromThrowable` measured; `ok`/`err` waits on typesugar#101
+
+**`fromThrowable`: compiling a wrapper to an inline `try`/`catch` would gain
+7–18%, so it isn't built (F15).** The consumer benchmark compares a
+`fromThrowable(lengthOf, onError)` wrapper with the `try { return
+ok(lengthOf(s)) } catch (e) { return err(onError(e)) }` a macro would emit
+(`case-study/results/stage-5/fromthrowable.md`, 3 runs, load 4–6):
+
+| Case | `fromThrowable` | inline `try`/`catch` |
+| --- | ---: | ---: |
+| 10% of calls throw | 5,310–5,579 | 6,192–6,261 |
+| no call throws | 357,895–359,165 | 382,548–385,893 |
+
+Throwing an `Error` costs about 60 times a call that returns, so the wrapper
+is a small part of the cost when anything throws. When nothing throws, the
+wrapper costs about 7%.
+
+**`ok`/`err` and return-type specialisation: deferred.** The by-name checks
+this stage was going to test are fixed by
+[typesugar#101](https://github.com/typesugar/typesugar/pull/101) (from this
+study; not merged):
+
+- Return-type specialisation used to pick its algebra by a type's printed
+  name, and rewrite every call spelled `ok(…)`/`err(…)`/`Result.ok(…)`.
+- #101 matches the Result types it may rewrite by declaration.
+- Its tests pin that a neverthrow-shaped `type Result = Ok | Err` with its
+  own `ok`/`err` is left untouched.
+
+Registering neverthrow's `Result` as a source for that specialisation would
+need typesugar code that runs at build time. That would be neverthrow's first
+`./macros` entry, and the first third-party package to go through PEP-055's
+`approve-macros`. It builds on #101's new API, so it waits for that to merge.
+
 ### Stage 6: `ResultAsync`
 
 **Result: do-notation over `ResultAsync` runs 10 times faster than async
@@ -629,6 +664,15 @@ superseded, not deleted._
   - **A tip for neverthrow users, typesugar or not:** nest synchronous
     steps inside `andThen` rather than chaining them on the `ResultAsync`.
   - **Evidence:** `case-study/results/stage-6/consumer-bench.md`.
+
+- **F15 (result): an inline `try`/`catch` beats a `fromThrowable` wrapper by
+  only 7–18%.**
+  - **Numbers:** batches of 1,000 with 10% of calls throwing: 5,310–5,579/s
+    for the wrapper against 6,192–6,261/s inline. With no throws: about
+    358,000/s against 384,000/s.
+  - **Why:** the throw dominates whenever there is one.
+  - **Decision:** a macro to compile `fromThrowable` isn't worth building.
+  - **Evidence:** `case-study/results/stage-5/fromthrowable.md`.
 
 ## Follow-ups outside this fork
 
