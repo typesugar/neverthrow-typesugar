@@ -62,6 +62,11 @@ add("S4 let: (typesugar)", () => { for (let i = 0; i < N; i++) use(isOk(c.viaDo(
 add("S6 async safeTry (awaited)", async () => { for (let i = 0; i < N; i++) use(isOk(await c.viaSafeTryAsync(inputs[i]))); });
 add("S6 async let: (typesugar, awaited)", async () => { for (let i = 0; i < N; i++) use(isOk(await c.viaDoAsync(inputs[i]))); });
 add("S6 async andThen/map (awaited)", async () => { for (let i = 0; i < N; i++) use(isOk(await c.viaMethodsAsync(inputs[i]))); });
+const noThrow = inputs.map((s) => (s.charCodeAt(0) === 120 ? "y" + s.slice(1) : s));
+add("S5 fromThrowable (10% throw)", () => { for (let i = 0; i < N; i++) use(isOk(c.viaFromThrowable(inputs[i]))); });
+add("S5 inline try/catch (10% throw)", () => { for (let i = 0; i < N; i++) use(isOk(c.viaTryHand(inputs[i]))); });
+add("S5 fromThrowable (no throw)", () => { for (let i = 0; i < N; i++) use(isOk(c.viaFromThrowable(noThrow[i]))); });
+add("S5 inline try/catch (no throw)", () => { for (let i = 0; i < N; i++) use(isOk(c.viaTryHand(noThrow[i]))); });
 add("S3 .match() method", () => { for (let i = 0; i < N; i++) use(c.viaMatchMethod(results[i])); });
 add("S3 match() (typesugar)", () => { for (let i = 0; i < N; i++) use(c.viaMatchMacro(results[i])); });
 
