@@ -53,6 +53,12 @@ done
   echo "files:"
   (cd "$OUT" && shasum -a 256 *.tgz | sed 's/^/  /')
 } > "$OUT/COMMIT"
+# Belt and braces for the sed above (F2): never leave a credential behind.
+if grep -Eq '://[^/[:space:]]*@' "$OUT/COMMIT"; then
+  rm -f "$OUT/COMMIT"
+  echo "error: the remote URL still carries credentials; COMMIT not written" >&2
+  exit 1
+fi
 
 # Point the case-study package's dependencies and overrides at the new names.
 REPO="$(cd "$OUT/../.." && pwd)"
