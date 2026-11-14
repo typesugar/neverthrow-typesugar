@@ -429,7 +429,8 @@ superseded, not deleted._
   type is made of the same class or interface declarations (compared by
   symbol) serves it; name matches still come first, and a same-named
   unrelated type still fails. Commit `8f533b00` on typesugar branch
-  `neverthrow-case-study-fixes-2`, failing test first
+  `neverthrow-case-study-fixes-2`
+  ([typesugar#102](https://github.com/typesugar/typesugar/pull/102)), failing test first
   (`packages/std/tests/do-instance-by-type.test.ts`). Evidence: the probes
   in this stage's log, `case-study/consumer/src/sugar.ts` (`doubleChecked`,
   `viaAlias`).
@@ -476,5 +477,6 @@ superseded, not deleted._
 - Turf fork: F2's `pack.sh` fix is applied (Turf `stage-3`, `147fdfd6e`).
 - typesugar: F3's fix is merged
   ([typesugar#87](https://github.com/typesugar/typesugar/pull/87)). F7 and
-  F8 are on branch `neverthrow-case-study-fixes-2`. F1, F4, F9 and F11 are
+  F8 are on branch `neverthrow-case-study-fixes-2`
+  ([typesugar#102](https://github.com/typesugar/typesugar/pull/102)). F1, F4, F9 and F11 are
   not filed.
