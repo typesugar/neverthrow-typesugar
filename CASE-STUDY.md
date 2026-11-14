@@ -732,6 +732,20 @@ superseded, not deleted._
     test, the guard nor the throw.
   - **Evidence:** `case-study/results/stage-3/consumer-sugar.expanded.ts`.
 
+- **F17 (method): an A/A run puts this machine's noise floor near 10%
+  at load 4–6, and the spread rule misses about 1 in 14.**
+  - **Setup:** v8.2.0 benched against itself in two worktrees, 5 rounds
+    alternating.
+  - **Spread of results:** the deltas ran from −9.0% (`safeTry`) to +3.6%,
+    with a median absolute delta of about 2%.
+  - **False signal:** one task of 14 (the `andThen` pipeline, +3.6% against
+    a 2.6% spread) was flagged as a real difference, so the "spread > Δ"
+    flag alone lets about 1 in 14 noise deltas through.
+  - **How to read the stages:** this study's conclusions rest on gaps far
+    outside that floor (22×, 10×, 4.6×), or on ceilings it reports as small
+    (+7–26%); none rests on a single delta under 10%.
+  - **Evidence:** `case-study/results/calibration-v8.2.0-a-a/summary.md`.
+
 ## Follow-ups outside this fork
 
 - Turf fork: F2's `pack.sh` fix is applied (Turf `stage-3`, `147fdfd6e`).
