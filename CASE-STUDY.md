@@ -121,13 +121,11 @@ comparing against ours.
    **Done**, see the log. The plan was a `./macros` entry approved through
    PEP-055; instances turned out to need neither (F10).
 2. **Method chains compiled to hand-written code.** In typesugar-compiled
-   code, `parse(s).andThen(validate).map(toUser).mapErr(toHttp)` becomes the
-   branches a person would write: no method dispatch, no closures, one
-   `Result` allocated at the end instead of one per step. The `instanceof`
-   check doesn't go away: a sum type needs one branch, and hand-written code
-   has it too; it moves from inside each method to one test per chain. The
-   zero-cost bar is the `reference:` bench tasks, with the classes as the
-   representation.
+   code, `parse(s).andThen(validate).map(toUser).mapErr(toHttp)` would
+   become the branches a person would write: no method dispatch, no
+   closures, one `Result` allocated at the end instead of one per step.
+   **Measured, not built** (F13): the hand-written ceiling is at most about
+   20% faster, so the feature isn't worth its cost.
 3. **`match()` over `Result`** in consumer code:
    `match(r).case(Ok(v))....case(Err(e))...`. Extractors are `Destructure`
    instances resolved from scope and keyed by the constructor's symbol, not
@@ -146,6 +144,9 @@ comparing against ours.
    branches, against `safeTry` generators. Stage 0's benchmark puts a
    two-step `safeTry` at about 26 times the cost of the same chain written
    with `andThen` (F6), so this is the stage with the largest expected win.
+   **Done by Stage 1** (its `FlatMap` instance; `let:` compiles to the
+   `andThen`/`map` chain) and measured in Stage 2: 22 times faster than
+   `safeTry`.
 5. **`ok`/`err`, `fromThrowable` and return-type specialisation.**
    typesugar's return-type specialisation and fp's `ok`/`err` macros pick the
    result algebra by type name today (PEP-062 row 10;
@@ -350,6 +351,58 @@ Adoption cost for a consumer:
 
 There's no approval step and nothing to configure for neverthrow (F10).
 
+### Stage 2: what compiling chains could gain, measured before building it
+
+**Result: little.** Class chains run close to the code a compiler would
+write by hand. So the typesugar feature this stage planned would buy at most
+about 20% on a four-step chain and nothing on `map` chains. Meanwhile
+do-notation, which works since Stage 1, is 22 times faster than `safeTry`.
+The feature is not built (F13).
+
+typesugar: `neverthrow-case-study-fixes-2` at `3e055859`, which adds the
+fix for F12 to Stage 1's. neverthrow's `dist/*.js` is still byte-identical
+to v8.2.0, and its 117 tests pass.
+
+The benchmark (`case-study/consumer/bench/`):
+
+- `cases.ts` is compiled ahead of time with `typesugar build` to CommonJS,
+  so no loader runs in the timed process.
+- `run.mjs` times batches of 1,000 seeded inputs.
+- `rounds.mjs` runs 5 rounds in fresh processes, alternating two modes:
+  - clean;
+  - "polluted": `Ok`/`Err`'s methods are first called with 32 different
+    callbacks from many call sites, as an app's would be, so V8 can't
+    specialise them for one callback.
+- The `…Hand` cases are written by hand as the code a chain compiler would
+  emit (branches on `"value" in r`, one `Result` allocated at the end), so
+  they are the ceiling for Stage 2.
+
+Medians of 5 rounds, batches of 1,000 per second (load 4.5–4.9 on 18 cores;
+`case-study/results/stage-2/consumer-bench.md`):
+
+| Case | Clean | Spread | Polluted | Spread |
+| --- | ---: | ---: | ---: | ---: |
+| 4-step chain (`andThen`, `map`, `mapErr`): methods | 58,853 | 13% | 59,114 | 5% |
+| the same, hand-compiled | 70,249 | 15% | 74,709 | 8% |
+| `map` ×3: methods | 1,108,117 | 25% | 1,188,157 | 21% |
+| the same, hand-compiled | 1,165,812 | 27% | 1,205,303 | 23% |
+| `safeTry`, two `yield*`s | 2,768 | 23% | 2,678 | 10% |
+| `let:`/`yield:` (typesugar, Stage 1) | 60,822 | 6% | 60,991 | 9% |
+| `.match()` method | 510,338 | 2% | 510,773 | 4% |
+| `match()` (typesugar, Stage 1) | 554,971 | 9% | 556,996 | 2% |
+
+- **Stage 2's ceiling.**
+  - The four-step chain gains 19% clean and 26% polluted, against spreads of 5–15%: a real but small gain. It comes from not allocating an
+    `Ok`/`Err` per step.
+  - `map` ×3 gains nothing measurable: V8 already removes the intermediate
+    objects.
+  - Polluting the methods' call sites cost the methods nothing.
+- **Stage 4 is done by Stage 1.** `let:` compiles to the `andThen`/`map`
+  chain, runs 22 times faster than `safeTry`, and matches the chain's speed.
+- **Stage 3's `match()`** is about 9% faster than the `.match()` method, about
+  the size of its spread. Each match is still wrapped in a function that is
+  called at once (Stage 1 log); V8 appears to inline it.
+
 ## Findings
 
 _typesugar bugs, gaps and design lessons, and method notes, each with its
@@ -472,11 +525,51 @@ superseded, not deleted._
   `Ok`/`Err` is fine. Stage 3. Evidence: `nested` in
   `case-study/consumer/src/sugar.ts`.
 
+- **F12 (bug, fixed): an import named like a method took over that
+  method on values that have it.**
+  - **Symptom:** in a file importing typesugar's `match`, every
+    neverthrow `result.match(onOk, onErr)` became `match(result, onOk,
+    onErr)`. That call was then unbound, because the macro's import is
+    removed after expansion. The consumer benchmark's `.match()` case
+    failed at runtime this way.
+  - **Cause:** a bare imported function named after a method was allowed to
+    replace the receiver's own method. The extension-methods guide's
+    resolution order says the opposite: the native method comes first.
+    ts-pattern's `match`, often used beside neverthrow, would do the same.
+  - **Related bug:** on a value with no such member, `value.match(...)` was
+    looked up as a macro by name, because the checker has no symbol for a
+    missing property. It failed with "Fluent match chain does not root in a
+    call expression".
+  - **Fix:**
+    - a callable own member always wins over imports;
+    - a member that can't be called (a `step: number` field) can still be
+      replaced by an imported `step(value, n)`;
+    - a missing member is never a macro by name;
+    - the extension call `match(value, ...)` expands like any call to the
+      macro (Dean's choice over leaving it a runtime call or reporting an
+      error).
+  - **Commit:** `3e055859` on `neverthrow-case-study-fixes-2`
+    ([typesugar#102](https://github.com/typesugar/typesugar/pull/102)),
+    failing tests first (`transformer-core/tests/visitor-engine.test.ts`).
+- **F13 (result): compiling neverthrow's method chains to branches would gain
+  at most about 20%, so the feature isn't worth building.**
+  - **The ceiling:** hand-compiled versions of the chains (the best such a
+    feature could emit) beat the methods by 19–26% on a four-step `andThen`/`map`/`mapErr`
+    chain and by nothing measurable on `map` ×3.
+  - **Callback mix:** calling the methods with many different callbacks
+    first doesn't change that.
+  - **Cost:** a chain compiler would need rules for the meaning of
+    each `Result` method (or a new kind of instance) and would own all of
+    neverthrow's edge cases.
+  - **Better targets:** do-notation instead of `safeTry` gains 22× with
+    what Stage 1 already ships.
+  - **Evidence:** `case-study/results/stage-2/consumer-bench.md`.
+
 ## Follow-ups outside this fork
 
 - Turf fork: F2's `pack.sh` fix is applied (Turf `stage-3`, `147fdfd6e`).
 - typesugar: F3's fix is merged
-  ([typesugar#87](https://github.com/typesugar/typesugar/pull/87)). F7 and
-  F8 are on branch `neverthrow-case-study-fixes-2`
+  ([typesugar#87](https://github.com/typesugar/typesugar/pull/87)). F7, F8
+  and F12 are on branch `neverthrow-case-study-fixes-2`
   ([typesugar#102](https://github.com/typesugar/typesugar/pull/102)). F1, F4, F9 and F11 are
   not filed.
