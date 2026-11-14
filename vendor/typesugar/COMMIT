@@ -1,21 +1,21 @@
-commit: 3e05585960a129fd044bf0afd214a9437cdf1de2
+commit: 2f7a375a697bf68c2046ba80703d82529c7ed1e3
 branch: neverthrow-case-study-fixes-2
 remote: https://github.com/typesugar/typesugar
-packed: 2026-11-14T07:33:54Z
+packed: 2026-11-14T08:06:39Z
 node:   v22.23.2
 files:
-  78ce0ee7d4e029481cd4e56ad5a4bc59012853b347034ebe4bba88f492e4eb57  typesugar-0.1.1-3e055859.tgz
-  e6335d86fb7e0e549c4bbcddf39469bc705cf91fb0f1aef62011cf4ac3e940f1  typesugar-contracts-0.1.1-3e055859.tgz
-  eef30d11462d9842b7af213b825b018f43c82db19d064d9e83f6e94cec95d46f  typesugar-core-0.1.1-3e055859.tgz
-  8bcdc2dd62b40294df1522bc036e17dc859e8de61371eecbfc09c7c31108f527  typesugar-derive-0.1.1-3e055859.tgz
-  4cd4ae57e9931fe35d0bf173f8a0c3430ad218f9afb3244e96bb6f3ded923e01  typesugar-fp-0.1.1-3e055859.tgz
-  cf1282b41355ad4907018d16d089551be875ba5f0b09887e1d1b661d870c008d  typesugar-lsp-common-0.1.1-3e055859.tgz
-  07f81485cb831e948f18c198824a4a91ad3afdbd6db9cf4541c43c32368330b6  typesugar-macros-0.1.1-3e055859.tgz
-  129be6d069c061aaea47cf6d39380335911c393261b67339a76527b96f9e9abe  typesugar-reflect-0.1.1-3e055859.tgz
-  cf682a27ca15e7e375688987006df8adde207b39e5cc57f0d312640da36c0ab1  typesugar-std-0.1.1-3e055859.tgz
-  0733fdb7de41dc81fd4db04d246d5a4fe9f797f305d21ba75b172552960af5ca  typesugar-transformer-0.1.1-3e055859.tgz
-  06b4579c2799acebeaf7642dc21cb2cad037447e0db172bb9cc2c36e102d6ffa  typesugar-transformer-core-0.1.1-3e055859.tgz
-  8f1329ea57516ff1b14be41ac0dd8d3949eaf49b65a408dbb3d279c21f3c0ca2  typesugar-type-system-0.1.1-3e055859.tgz
-  18fdf13d3e97ff3676a0762c5965616ad849a2456d228a2eb9f1c7ddcc10e425  typesugar-typeclass-0.1.1-3e055859.tgz
-  28d1bb8e3b804f7ce30957f4e1c0fe6e6b3ef28a09c3413273b7e55e59b3be63  typesugar-validate-0.1.1-3e055859.tgz
-  ff180272bb76eebd9856a0dc432cb2b94898cb3b429b60756896524ecc097201  unplugin-typesugar-0.1.1-3e055859.tgz
+  3294101dc9588030c0f7172ced6ded35d12fe3cddf5599dfaf8eb2e0abe68006  typesugar-0.1.1-2f7a375a.tgz
+  e6335d86fb7e0e549c4bbcddf39469bc705cf91fb0f1aef62011cf4ac3e940f1  typesugar-contracts-0.1.1-2f7a375a.tgz
+  eef30d11462d9842b7af213b825b018f43c82db19d064d9e83f6e94cec95d46f  typesugar-core-0.1.1-2f7a375a.tgz
+  8bcdc2dd62b40294df1522bc036e17dc859e8de61371eecbfc09c7c31108f527  typesugar-derive-0.1.1-2f7a375a.tgz
+  2788b1561bdbfdfb200d46c52b737dce3db7b8086c3c279ce3e82d8a1e647b36  typesugar-fp-0.1.1-2f7a375a.tgz
+  cf1282b41355ad4907018d16d089551be875ba5f0b09887e1d1b661d870c008d  typesugar-lsp-common-0.1.1-2f7a375a.tgz
+  07f81485cb831e948f18c198824a4a91ad3afdbd6db9cf4541c43c32368330b6  typesugar-macros-0.1.1-2f7a375a.tgz
+  129be6d069c061aaea47cf6d39380335911c393261b67339a76527b96f9e9abe  typesugar-reflect-0.1.1-2f7a375a.tgz
+  984e560fbb62b95e3768866d652809ef98b8a89b97f0508ac507788a91ee450a  typesugar-std-0.1.1-2f7a375a.tgz
+  fa9d3f5e7b5b5c41e9b0b58e0ba3ffc41dd1121cb5edaee1164046ac2583896d  typesugar-transformer-0.1.1-2f7a375a.tgz
+  f5811f25621f56b782a989287bbd4fbcdf47cd9f11db80e5e33460e16ae1ef05  typesugar-transformer-core-0.1.1-2f7a375a.tgz
+  8f1329ea57516ff1b14be41ac0dd8d3949eaf49b65a408dbb3d279c21f3c0ca2  typesugar-type-system-0.1.1-2f7a375a.tgz
+  18fdf13d3e97ff3676a0762c5965616ad849a2456d228a2eb9f1c7ddcc10e425  typesugar-typeclass-0.1.1-2f7a375a.tgz
+  6c43a8ec241b5efd930619f539a8a903012cb32e033b6ff4dc21d5b1d6d4eaeb  typesugar-validate-0.1.1-2f7a375a.tgz
+  ff180272bb76eebd9856a0dc432cb2b94898cb3b429b60756896524ecc097201  unplugin-typesugar-0.1.1-2f7a375a.tgz
